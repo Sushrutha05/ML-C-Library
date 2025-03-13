@@ -14,7 +14,7 @@ extern "C" {
  * @param x The x value for which to predict y.
  * @param type The data type of x_arr and y_arr ("int" or "double").
  */
-void lin_reg(const void* x_arr, const void* y_arr, int no_ele, double x, const char* type);
+double lin_reg(const void* x_arr, const void* y_arr, int no_ele, double x, const char* type);
 
 #ifdef __cplusplus
 }

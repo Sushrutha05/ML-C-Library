@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <string.h>  
+#include <math.h>
 
-void lin_reg(const void* x_arr, const void* y_arr, int no_ele, double x, const char* type) {
+double lin_reg(const void* x_arr, const void* y_arr, int no_ele, double x, const char* type) {
     if (no_ele < 2) {
         fprintf(stderr, "Error: Need at least 2 data points for regression.\n");
-        return;
+        return NAN;
     }
 
     double sum_x = 0, sum_y = 0, sum_XY = 0, sum_X2 = 0;
@@ -35,12 +36,11 @@ void lin_reg(const void* x_arr, const void* y_arr, int no_ele, double x, const c
 
     if (sum_X2 == 0) {
         fprintf(stderr, "Error: All x values are the same, cannot perform regression.\n");
-        return;
+        return  NAN;
     }
 
     double b_YX = sum_XY / sum_X2;
     double y = (b_YX * (x - mean_x)) + mean_y;
 
-    printf("\nRegression Equation: y = %.4lf * x + %.4lf\n", b_YX, mean_y - b_YX * mean_x);
-    printf("Predicted y for x = %.2lf: %.4lf\n", x, y);
+    return y;
 }
