@@ -13,7 +13,7 @@
 ## 📥 **Installation**  
 Clone the repository and include the required headers in your project:  
 ```sh
-git clone https://github.com/yourusername/mllib.git
+git clone https://github.com/Sushrutha05/ML-C-Library.git
 ```
 Then, include the main header in your code:  
 ```c
