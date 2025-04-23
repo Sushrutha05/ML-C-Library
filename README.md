@@ -13,7 +13,7 @@
 ## 📥 **Installation**  
 Clone the repository and include the required headers in your project:  
 ```sh
-git clone https://github.com/yourusername/mllib.git
+git clone https://github.com/Sushrutha05/ML-C-Library.git
 ```
 Then, include the main header in your code:  
 ```c
@@ -21,6 +21,7 @@ Then, include the main header in your code:
 ```
 
 ---
+If you plan to use the static library (libmllib.a), make sure it is built and available in your ```lib/ ```directory.
 
 ## 📖 **Usage**  
 
@@ -49,11 +50,33 @@ int main() {
 ```
 
 #### **Compiling and Running**  
+To compile and link your program with the static library (```libmllib.a```), use the following command:
 ```sh
-gcc -o my_program my_program.c linear_reg.c -lm
+gcc my_program.c -Iinclude -Llib -lmllib -o my_program
 ./my_program
 ```
+This command does the following:
 
+-Iinclude: Tells the compiler to look for header files in the include/ directory.
+
+-Llib: Tells the linker to look for libraries in the lib/ directory.
+
+-lmllib: Links the program with libmllib.a (the static library).
+
+If you haven't already built the static library (libmllib.a), follow the instructions below to create it.
+
+Building the Static Library (libmllib.a)
+To build the static library (libmllib.a), run the following commands in the project directory:
+
+1.Compile the source files into object files:
+```
+gcc -c src/linear_reg.c -Iinclude -o linear_reg.o
+```
+2. Create the static library:
+```
+ar rcs lib/libmllib.a linear_reg.o
+```
+Once the static library is created, you can use it in your programs as described above.
 ---
 
 ## 📌 **Planned Models**   
