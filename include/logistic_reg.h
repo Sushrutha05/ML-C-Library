@@ -44,7 +44,7 @@ void logreg_free(LogRegModel *model);
  * @param Int num_samples Number of samples
  * @param LogRegConfig config file for that model 
 */
-void logreg_train(LogRegModel *model, const double *X, const double *y, size_t num_samples, LogRegConfig config);
+int logreg_train(LogRegModel *model, const double *X, const double *y, size_t num_samples, const LogRegConfig config);
 
 /**
  * Predicts probabilities based on the trained model

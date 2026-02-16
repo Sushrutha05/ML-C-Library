@@ -1,44 +1,56 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
+#include <string.h>
 
 static const double LOGREG_EPSILON = 1e-15;
 
-typedef struct {
+typedef struct
+{
     double *weights;
     size_t num_features;
     double bias;
     size_t stopping_iteration;
+    int trained;
 } LogRegModel;
 
-typedef struct {
+typedef struct
+{
     double learning_rate;
     size_t num_iterations;
     double early_stopping_threshold;
     double classification_threshold;
 } LogRegConfig;
 
-double sigmoid(double z) {
-    if (z >= 0) {
+double sigmoid(double z)
+{
+    if (z >= 0)
+    {
         double exp_neg = exp(-z);
         return 1.0 / (1.0 + exp_neg);
-    } else {
+    }
+    else
+    {
         double exp_pos = exp(z);
         return exp_pos / (1.0 + exp_pos);
     }
 }
 
-double binary_cross_entropy(double p, double y) {
+double binary_cross_entropy(double p, double y)
+{
     p = fmax(LOGREG_EPSILON, fmin(1.0 - LOGREG_EPSILON, p));
     return -((y * log(p)) + ((1 - y) * log(1 - p)));
 }
 
-LogRegModel* logreg_create(size_t num_features) {
+LogRegModel *logreg_create(size_t num_features)
+{
     LogRegModel *model = malloc(sizeof(LogRegModel));
-    if (!model) return NULL;
+    if (!model)
+        return NULL;
 
     model->weights = calloc(num_features, sizeof(double));
-    if (!model->weights) {
+    if (!model->weights)
+    {
         free(model);
         return NULL;
     }
@@ -46,39 +58,52 @@ LogRegModel* logreg_create(size_t num_features) {
     model->num_features = num_features;
     model->bias = 0.0;
     model->stopping_iteration = 0;
+    model->trained = 0;
 
     return model;
 }
 
-void logreg_free(LogRegModel *model) {
-    if (!model) return;
+void logreg_free(LogRegModel *model)
+{
+    if (!model)
+        return;
+    model->trained = 0;
     free(model->weights);
     free(model);
 }
 
-void logreg_train(LogRegModel *model,
+int logreg_train(LogRegModel *model,
                  const double *X,
                  const double *y,
                  size_t num_samples,
-                 LogRegConfig config) {
+                 const LogRegConfig config)
+{
 
     if (!model || !X || !y || num_samples == 0)
         return -1;
 
     double prev_loss = DBL_MAX;
+    double *dw = calloc(model->num_features, sizeof(double));
+    if (!dw)
+        return -1;
 
-    for (size_t iter = 0; iter < config.num_iterations; iter++) {
+    model->trained = 0;
+    model->stopping_iteration = config.num_iterations;
 
-        double *dw = calloc(model->num_features, sizeof(double));
-        if (!dw) return -1;
+    for (size_t iter = 0; iter < config.num_iterations; iter++)
+    {
+
+        memset(dw, 0, model->num_features * sizeof(double));
 
         double db = 0.0;
 
-        for (size_t i = 0; i < num_samples; i++) {
+        for (size_t i = 0; i < num_samples; i++)
+        {
 
             double z = model->bias;
 
-            for (size_t j = 0; j < model->num_features; j++) {
+            for (size_t j = 0; j < model->num_features; j++)
+            {
                 z += model->weights[j] *
                      X[i * model->num_features + j];
             }
@@ -86,7 +111,8 @@ void logreg_train(LogRegModel *model,
             double p = sigmoid(z);
             double err = p - y[i];
 
-            for (size_t j = 0; j < model->num_features; j++) {
+            for (size_t j = 0; j < model->num_features; j++)
+            {
                 dw[j] += err *
                          X[i * model->num_features + j];
             }
@@ -94,7 +120,8 @@ void logreg_train(LogRegModel *model,
             db += err;
         }
 
-        for (size_t j = 0; j < model->num_features; j++) {
+        for (size_t j = 0; j < model->num_features; j++)
+        {
             dw[j] /= num_samples;
             model->weights[j] -= config.learning_rate * dw[j];
         }
@@ -104,11 +131,13 @@ void logreg_train(LogRegModel *model,
 
         double total_loss = 0.0;
 
-        for (size_t i = 0; i < num_samples; i++) {
+        for (size_t i = 0; i < num_samples; i++)
+        {
 
             double z = model->bias;
 
-            for (size_t j = 0; j < model->num_features; j++) {
+            for (size_t j = 0; j < model->num_features; j++)
+            {
                 z += model->weights[j] *
                      X[i * model->num_features + j];
             }
@@ -119,10 +148,8 @@ void logreg_train(LogRegModel *model,
 
         double avg_loss = total_loss / num_samples;
 
-        free(dw);
-
-        if (fabs(prev_loss - avg_loss) <
-            config.early_stopping_threshold) {
+        if (prev_loss > 0 && fabs(prev_loss - avg_loss) / prev_loss < config.early_stopping_threshold)
+        {
             model->stopping_iteration = iter + 1;
             break;
         }
@@ -130,14 +157,25 @@ void logreg_train(LogRegModel *model,
         prev_loss = avg_loss;
         model->stopping_iteration = iter + 1;
     }
+
+    free(dw);
+    model->trained = 1;
+    return 0;
 }
 
 double logreg_predict_proba(const LogRegModel *model,
-                            const double *x) {
+                            const double *x)
+{
+    if (!model || !model->trained)
+    {
+        fprintf(stderr, "Model is not trained.\n");
+        return NAN;
+    }
 
     double z = model->bias;
 
-    for (size_t j = 0; j < model->num_features; j++) {
+    for (size_t j = 0; j < model->num_features; j++)
+    {
         z += model->weights[j] * x[j];
     }
 
@@ -146,9 +184,14 @@ double logreg_predict_proba(const LogRegModel *model,
 
 int logreg_predict(const LogRegModel *model,
                    const double *x,
-                   double threshold) {
+                   double threshold)
+{
+    if (!model || !model->trained)
+    {
+        fprintf(stderr, "Model is not trained.\n");
+        return -1;
+    }
 
     double p = logreg_predict_proba(model, x);
     return (p >= threshold) ? 1 : 0;
 }
-
