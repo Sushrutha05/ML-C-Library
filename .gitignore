@@ -1,0 +1,19 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.o
+*.obj
+
+# Static Libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+
+# Folders
+debug/
+build/
+.vscode/

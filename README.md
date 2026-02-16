@@ -1,39 +1,36 @@
-# **mllib – Machine Learning Library in C**  
+# **mllib – Machine Learning Library in C**
 
-**mllib** is a lightweight and extensible **Machine Learning Library** for C. It provides fundamental ML models like **Linear Regression**, with plans to expand to other models in the future.  
+**mllib** is a lightweight and extensible **Machine Learning Library** for C. It provides fundamental ML models like **Linear Regression** and **Logistic Regression**, with plans to expand to other models in the future.
 
-## 🚀 **Features**  
-✅ Simple and efficient ML algorithms in pure C.  
-✅ Lightweight, with no external dependencies.  
-✅ Easy-to-use API with `#include "mllib.h"`.  
-✅ Open-source and extensible for future models.  
+## 🚀 **Features**
+✅ Simple and efficient ML algorithms in pure C.
+✅ Lightweight, with no external dependencies.
+✅ Easy-to-use API with `#include "mllib.h"`.
+✅ Open-source and extensible for future models.
 
 ---
 
-## 📥 **Installation**  
-Clone the repository and include the required headers in your project:  
+## 📥 **Installation**
+Clone the repository and build the project using `build.bat`:
 ```sh
 git clone https://github.com/Sushrutha05/ML-C-Library.git
+cd ML-C-Library
+build.bat
 ```
-Then, include the main header in your code:  
+
+Then, include the main header in your code:
 ```c
 #include "mllib.h"
 ```
 
 ---
-If you plan to use the static library (libmllib.a), make sure it is built and available in your ```lib/ ```directory.
 
-## 📖 **Usage**  
+## 📖 **Usage**
 
-### **Linear Regression**  
-Use `lin_reg()` to perform simple linear regression.  
+### **Linear Regression**
+Use `lin_reg()` to perform simple linear regression.
 
-#### **Function Declaration**  
-```c
-double lin_reg(const void* x_arr, const void* y_arr, int no_ele, double x, const char* type);
-```
-
-#### **Example**  
+#### **Example**
 ```c
 #include <stdio.h>
 #include "mllib.h"
@@ -42,6 +39,7 @@ int main() {
     double x_arr[] = {1, 2, 3, 4, 5};
     double y_arr[] = {2, 4, 6, 8, 10};
     
+    // Predict for x = 6
     double predicted = lin_reg(x_arr, y_arr, 5, 6, "double");
     printf("Predicted value: %.2lf\n", predicted);
 
@@ -49,38 +47,44 @@ int main() {
 }
 ```
 
-#### **Compiling and Running**  
-To compile and link your program with the static library (```libmllib.a```), use the following command:
-```sh
-gcc my_program.c -Iinclude -Llib -lmllib -o my_program
-./my_program
+### **Logistic Regression**
+Use `logreg_create()`, `logreg_train()`, and `logreg_predict()` for binary classification.
+
+#### **Example**
+```c
+#include <stdio.h>
+#include "mllib.h"
+
+int main() {
+    // ... setup data ...
+    LogRegModel *model = logreg_create(num_features);
+    logreg_train(model, X, y, num_samples, config);
+    
+    int class_label = logreg_predict(model, sample, 0.5);
+    logreg_free(model);
+    return 0;
+}
 ```
-This command does the following:
 
--Iinclude: Tells the compiler to look for header files in the include/ directory.
+Check `examples/` for full working code.
 
--Llib: Tells the linker to look for libraries in the lib/ directory.
-
--lmllib: Links the program with libmllib.a (the static library).
-
-If you haven't already built the static library (libmllib.a), follow the instructions below to create it.
-
-Building the Static Library (libmllib.a)
-To build the static library (libmllib.a), run the following commands in the project directory:
-
-1.Compile the source files into object files:
-```
-gcc -c src/linear_reg.c -Iinclude -o linear_reg.o
-```
-2. Create the static library:
-```
-ar rcs lib/libmllib.a linear_reg.o
-```
-Once the static library is created, you can use it in your programs as described above.
 ---
 
-## 📌 **Planned Models**   
-- [ ] **Logistic Regression**  
-- [ ] **K-Nearest Neighbors (KNN)**  
-- [ ] **Support Vector Machines (SVM)**  
-- [ ] **Decision Trees**  
+## 🛠 **Building**
+The project includes a `build.bat` script to automate the build process on Windows.
+
+- **Build Library & Examples**:
+  ```cmd
+  build.bat
+  ```
+- **Clean Build Artifacts**:
+  Manually delete `.o`, `.a`, `.exe` files or create a clean script.
+
+---
+
+## 📌 **Planned Models**
+- [x] **Linear Regression**
+- [x] **Logistic Regression**
+- [ ] **K-Nearest Neighbors (KNN)**
+- [ ] **Support Vector Machines (SVM)**
+- [ ] **Decision Trees**
