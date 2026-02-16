@@ -61,7 +61,7 @@ int logreg_train(RegressionModel *model,
                  const double *X,
                  const double *y,
                  size_t num_samples,
-                 RegressionConfig config);
+                 const RegressionConfig *config);
 
 /**
  * @brief Predicts probability for a single sample.

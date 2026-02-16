@@ -1,58 +1,57 @@
 #include <stdio.h>
-#include "mllib.h"
+#include <stdlib.h>
+#include "logistic_reg.h"
 
 int main() {
-    double X[] = {
-        0, 1,
-        1, 2,
-        2, 3,
-        3, 4
+    // Simple dataset: 1 feature. 
+    // x < 5 => class 0
+    // x >= 5 => class 1
+    double X[] = { 
+        1.0, 2.0, 3.0, 4.0, 
+        6.0, 7.0, 8.0, 9.0 
     };
+    double y[] = { 
+        0.0, 0.0, 0.0, 0.0, 
+        1.0, 1.0, 1.0, 1.0 
+    };
+    
+    size_t num_samples = 8;
+    size_t num_features = 1;
 
-    double y[] = {0, 0, 1, 1};
-
-    size_t num_samples = 4;
-    size_t num_features = 2;
-
-    LogRegConfig config = {
+    // Configuration
+    RegressionConfig config = {
         .learning_rate = 0.1,
-        .num_iterations = 1000,
-        .early_stopping_threshold = 0.0001,
-        .classification_threshold = 0.5
+        .num_iterations = 5000,
+        .early_stopping_threshold = 1e-6
     };
 
-    LogRegModel *model = logreg_create(num_features);
-
+    printf("Creating Logistic Regression Model...\n");
+    RegressionModel *model = logreg_create(num_features);
     if (!model) {
         fprintf(stderr, "Failed to create model.\n");
-        return -1;
+        return 1;
     }
 
-    if (logreg_train(model, X, y, num_samples, config) != 0) {
+    printf("Training...\n");
+    if (logreg_train(model, X, y, num_samples, &config) != 0) {
         fprintf(stderr, "Training failed.\n");
         logreg_free(model);
-        return -1;
+        return 1;
     }
 
-    printf("Trained Weights:\n");
-    for (size_t j = 0; j < model->num_features; j++) {
-        printf("w%zu = %.6f\n", j, model->weights[j]);
-    }
+    printf("Model Trained.\n");
+    printf("Bias: %f\n", model->bias);
+    printf("Weight: %f\n", model->weights[0]);
 
-    printf("bias = %.6f\n", model->bias);
+    // Predictions
+    double test_low[] = { 2.5 };
+    double prob_low = logreg_predict(model, test_low);
+    printf("Probability for x=2.5 (Expect ~0): %f\n", prob_low);
 
-    double test_sample[] = {2, 3};
-
-    double prob = logreg_predict_proba(model, test_sample);
-    int cls = logreg_predict(model,
-                             test_sample,
-                             config.classification_threshold);
-
-    printf("\nTest Sample [2, 3]:\n");
-    printf("probability = %.6f\n", prob);
-    printf("class = %d\n", cls);
+    double test_high[] = { 7.5 };
+    double prob_high = logreg_predict(model, test_high);
+    printf("Probability for x=7.5 (Expect ~1): %f\n", prob_high);
 
     logreg_free(model);
-
     return 0;
 }

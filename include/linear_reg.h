@@ -40,7 +40,7 @@ typedef struct
  * @param num_features Number of input features.
  * @return Pointer to allocated LinRegModel or NULL on failure.
  */
-LinRegModel* linreg_create(size_t num_features);
+RegressionModel* linreg_create(size_t num_features);
 
 /**
  * @brief Trains the model using batch gradient descent.
@@ -57,7 +57,7 @@ int linreg_train(RegressionModel *model,
                   const double *X,
                   const double *y,
                   size_t num_samples,
-                  RegressionConfig config);
+                  const RegressionConfig *config);
 
 /**
  * @brief Predicts output for a single sample.
