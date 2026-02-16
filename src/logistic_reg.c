@@ -7,44 +7,23 @@ static const double LOGREG_EPSILON = 1e-15;
 
 typedef struct
 {
-    double *weights;
     size_t num_features;
+    double *weights;
     double bias;
     size_t stopping_iteration;
     int trained;
-} LogRegModel;
+} RegressionModel;
 
 typedef struct
 {
     double learning_rate;
     size_t num_iterations;
     double early_stopping_threshold;
-    double classification_threshold;
-} LogRegConfig;
+} RegressionConfig;
 
-double sigmoid(double z)
+RegressionModel *logreg_create(size_t num_features)
 {
-    if (z >= 0)
-    {
-        double exp_neg = exp(-z);
-        return 1.0 / (1.0 + exp_neg);
-    }
-    else
-    {
-        double exp_pos = exp(z);
-        return exp_pos / (1.0 + exp_pos);
-    }
-}
-
-double binary_cross_entropy(double p, double y)
-{
-    p = fmax(LOGREG_EPSILON, fmin(1.0 - LOGREG_EPSILON, p));
-    return -((y * log(p)) + ((1 - y) * log(1 - p)));
-}
-
-LogRegModel *logreg_create(size_t num_features)
-{
-    LogRegModel *model = malloc(sizeof(LogRegModel));
+    RegressionModel *model = malloc(sizeof(RegressionModel));
     if (!model)
         return NULL;
 
@@ -63,7 +42,27 @@ LogRegModel *logreg_create(size_t num_features)
     return model;
 }
 
-void logreg_free(LogRegModel *model)
+double binary_cross_entropy(double p, double y)
+{
+    p = fmax(LOGREG_EPSILON, fmin(1.0 - LOGREG_EPSILON, p));
+    return -((y * log(p)) + ((1 - y) * log(1 - p)));
+}
+
+double sigmoid(double z)
+{
+    if (z >= 0)
+    {
+        double exp_neg = exp(-z);
+        return 1.0 / (1.0 + exp_neg);
+    }
+    else
+    {
+        double exp_pos = exp(z);
+        return exp_pos / (1.0 + exp_pos);
+    }
+}
+
+void logreg_free(RegressionModel *model)
 {
     if (!model)
         return;
@@ -72,15 +71,17 @@ void logreg_free(LogRegModel *model)
     free(model);
 }
 
-int logreg_train(LogRegModel *model,
-                 const double *X,
-                 const double *y,
-                 size_t num_samples,
-                 const LogRegConfig config)
+int logreg_train(RegressionModel *model, const double *X, const double *y, size_t num_samples, const RegressionConfig *config)
 {
 
     if (!model || !X || !y || num_samples == 0)
         return -1;
+
+    if (!config)
+    {
+        fprintf(stderr, "Null config passed.\n");
+        return -1;
+    }
 
     double prev_loss = DBL_MAX;
     double *dw = calloc(model->num_features, sizeof(double));
@@ -88,9 +89,9 @@ int logreg_train(LogRegModel *model,
         return -1;
 
     model->trained = 0;
-    model->stopping_iteration = config.num_iterations;
+    model->stopping_iteration = config->num_iterations;
 
-    for (size_t iter = 0; iter < config.num_iterations; iter++)
+    for (size_t iter = 0; iter < config->num_iterations; iter++)
     {
 
         memset(dw, 0, model->num_features * sizeof(double));
@@ -123,11 +124,11 @@ int logreg_train(LogRegModel *model,
         for (size_t j = 0; j < model->num_features; j++)
         {
             dw[j] /= num_samples;
-            model->weights[j] -= config.learning_rate * dw[j];
+            model->weights[j] -= config->learning_rate * dw[j];
         }
 
         db /= num_samples;
-        model->bias -= config.learning_rate * db;
+        model->bias -= config->learning_rate * db;
 
         double total_loss = 0.0;
 
@@ -148,7 +149,7 @@ int logreg_train(LogRegModel *model,
 
         double avg_loss = total_loss / num_samples;
 
-        if (prev_loss > 0 && fabs(prev_loss - avg_loss) / prev_loss < config.early_stopping_threshold)
+        if (prev_loss > 0 && fabs(prev_loss - avg_loss) / prev_loss < config->early_stopping_threshold)
         {
             model->stopping_iteration = iter + 1;
             break;
@@ -163,8 +164,7 @@ int logreg_train(LogRegModel *model,
     return 0;
 }
 
-double logreg_predict_proba(const LogRegModel *model,
-                            const double *x)
+double logreg_predict(const RegressionModel *model, const double *x)
 {
     if (!model || !model->trained)
     {
@@ -180,18 +180,4 @@ double logreg_predict_proba(const LogRegModel *model,
     }
 
     return sigmoid(z);
-}
-
-int logreg_predict(const LogRegModel *model,
-                   const double *x,
-                   double threshold)
-{
-    if (!model || !model->trained)
-    {
-        fprintf(stderr, "Model is not trained.\n");
-        return -1;
-    }
-
-    double p = logreg_predict_proba(model, x);
-    return (p >= threshold) ? 1 : 0;
 }

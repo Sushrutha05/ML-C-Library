@@ -19,7 +19,7 @@ typedef struct
     double bias;              /**< Bias term */
     size_t stopping_iteration;/**< Iteration where training stopped */
     int trained;              /**< Flag indicating if model is trained */
-} LinRegModel;
+} RegressionModel;
 
 /**
  * @brief Configuration parameters for training.
@@ -32,7 +32,7 @@ typedef struct
     double learning_rate;          /**< Gradient descent step size */
     size_t num_iterations;         /**< Maximum number of iterations */
     double early_stopping_threshold; /**< Relative loss improvement threshold */
-} LinRegConfig;
+} RegressionConfig;
 
 /**
  * @brief Creates a linear regression model.
@@ -50,12 +50,14 @@ LinRegModel* linreg_create(size_t num_features);
  * @param y Target vector (size: num_samples).
  * @param num_samples Number of training samples.
  * @param config Training configuration.
+ * 
+ * @return 0 on success, -1 on failure.
  */
-void linreg_train(LinRegModel *model,
+int linreg_train(RegressionModel *model,
                   const double *X,
                   const double *y,
                   size_t num_samples,
-                  LinRegConfig config);
+                  RegressionConfig config);
 
 /**
  * @brief Predicts output for a single sample.
@@ -64,7 +66,7 @@ void linreg_train(LinRegModel *model,
  * @param x Feature vector (size: num_features).
  * @return Predicted value or NAN if model not trained.
  */
-double linreg_predict(LinRegModel *model,
+double linreg_predict(RegressionModel *model,
                       const double *x);
 
 /**
@@ -72,7 +74,7 @@ double linreg_predict(LinRegModel *model,
  *
  * @param model Pointer to model.
  */
-void linreg_free(LinRegModel *model);
+void linreg_free(RegressionModel *model);
 
 #ifdef __cplusplus
 }

@@ -11,21 +11,24 @@ typedef struct
     double bias;
     size_t stopping_iteration;
     int trained;
-} LinRegModel;
+} RegressionModel;
+
 typedef struct
 {
     double learning_rate;
     size_t num_iterations;
     double early_stopping_threshold;
-} LinRegConfig;
+} RegressionConfig;
 
-LinRegModel* linreg_create(size_t num_features)
+RegressionModel *linreg_create(size_t num_features)
 {
-    LinRegModel *model = malloc(sizeof(LinRegModel));
-    if(!model) return NULL;
+    RegressionModel *model = malloc(sizeof(RegressionModel));
+    if (!model)
+        return NULL;
 
     model->weights = calloc(num_features, sizeof(double));
-    if(!model->weights){
+    if (!model->weights)
+    {
         free(model);
         return NULL;
     }
@@ -37,7 +40,7 @@ LinRegModel* linreg_create(size_t num_features)
     return model;
 }
 
-void linreg_free(LinRegModel *model)
+void linreg_free(RegressionModel *model)
 {
     if (!model)
         return;
@@ -46,25 +49,31 @@ void linreg_free(LinRegModel *model)
     free(model);
 }
 
-void linreg_train(LinRegModel *model, const double *x, const double *y, const size_t num_samples, const LinRegConfig config)
+int linreg_train(RegressionModel *model, const double *x, const double *y, const size_t num_samples, const RegressionConfig *config)
 {
     if (model == NULL || x == NULL || y == NULL)
     {
         fprintf(stderr, "Null pointer passed to linreg_train.\n");
-        return;
+        return -1;
     }
 
     if (num_samples < 2)
     {
         fprintf(stderr, "Error: Need at least 2 data points for regression.\n");
-        return;
+        return -1;
     }
 
     if (!model->weights)
     {
         fprintf(stderr, "Model weights not initialized properly.\n");
-        return;
+        return -1;
     }
+    if (!config)
+    {
+        fprintf(stderr, "Null config passed.\n");
+        return -1;
+    }
+
     model->trained = 0;
 
     double *dw = calloc(model->num_features, sizeof(double));
@@ -72,21 +81,20 @@ void linreg_train(LinRegModel *model, const double *x, const double *y, const si
     if (!dw)
     {
         fprintf(stderr, "Memory Allocation failed.\n");
-        return;
+        return -1;
     }
 
     double prev_loss = DBL_MAX;
 
-    model->stopping_iteration = config.num_iterations;
+    model->stopping_iteration = config->num_iterations;
 
-    for (size_t iter = 0; iter < config.num_iterations; iter++)
+    for (size_t iter = 0; iter < config->num_iterations; iter++)
     {
 
         memset(dw, 0, model->num_features * sizeof(double));
         double db = 0.0;
         double curr_loss = 0.0;
-        
-        
+
         for (size_t i = 0; i < num_samples; i++)
         {
             double y_pred = model->bias;
@@ -107,7 +115,7 @@ void linreg_train(LinRegModel *model, const double *x, const double *y, const si
             curr_loss += error * error;
         }
         curr_loss /= (2 * num_samples);
-        if (prev_loss > 0 && fabs(prev_loss - curr_loss) / prev_loss < config.early_stopping_threshold)
+        if (prev_loss > 0 && fabs(prev_loss - curr_loss) / prev_loss < config->early_stopping_threshold)
         {
             model->stopping_iteration = iter;
             break;
@@ -115,18 +123,19 @@ void linreg_train(LinRegModel *model, const double *x, const double *y, const si
 
         for (size_t j = 0; j < model->num_features; j++)
         {
-            model->weights[j] -= config.learning_rate * (dw[j] / num_samples);
+            model->weights[j] -= config->learning_rate * (dw[j] / num_samples);
         }
 
-        model->bias -= config.learning_rate * (db / num_samples);
+        model->bias -= config->learning_rate * (db / num_samples);
 
         prev_loss = curr_loss;
     }
     free(dw);
     model->trained = 1;
+    return 0;
 }
 
-double linreg_predict(LinRegModel *model, const double *x)
+double linreg_predict(RegressionModel *model, const double *x)
 {
 
     if (model == NULL || !model->trained)
