@@ -1,67 +1,90 @@
 #ifndef LOGISTIC_REG_H
 #define LOGISTIC_REG_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
-    #endif
+#endif
 
 /**
- * Returns the probability
- * 
- * @param z value to find the probability of
-*/
-double sigmoid(double z);
+ * @brief Logistic Regression model structure.
+ *
+ * Stores learned weights, bias, and training state.
+ */
+typedef struct
+{
+    size_t num_features;        /**< Number of input features */
+    double *weights;            /**< Weight vector of size num_features */
+    double bias;                /**< Bias term */
+    size_t stopping_iteration;  /**< Iteration where training stopped */
+    int trained;                /**< Flag indicating if model is trained */
+} LogRegModel;
 
 /**
- * Returns the loss
- * 
- * @param p value
- * @param y value
-*/
-double binary_cross_entropy(double p, double y);
+ * @brief Configuration parameters for logistic regression training.
+ */
+typedef struct
+{
+    double learning_rate;           /**< Gradient descent step size */
+    size_t num_iterations;          /**< Maximum number of iterations */
+    double early_stopping_threshold;/**< Relative loss improvement threshold */
+    double classification_threshold;/**< Default threshold for class prediction */
+} LogRegConfig;
 
 /**
- * Initializ the model values 
- * 
- * @param num features which denote the number of features
-*/
+ * @brief Creates a logistic regression model.
+ *
+ * @param num_features Number of input features.
+ * @return Pointer to allocated LogRegModel, or NULL on failure.
+ */
 LogRegModel* logreg_create(size_t num_features);
 
-
 /**
- * Deletes / frees the model 
- * 
- * @param num features which denote the number of features
-*/
+ * @brief Frees memory associated with the model.
+ *
+ * @param model Pointer to model.
+ */
 void logreg_free(LogRegModel *model);
 
 /**
- * Trains the model to compute the weights and biases 
- * 
- * @param LogRegModel model which will be trained
- * @param Array An array of data points X
- * @param Array An array of data points Y
- * @param Int num_samples Number of samples
- * @param LogRegConfig config file for that model 
-*/
-int logreg_train(LogRegModel *model, const double *X, const double *y, size_t num_samples, const LogRegConfig config);
+ * @brief Trains the logistic regression model using batch gradient descent.
+ *
+ * @param model Pointer to model.
+ * @param X Flattened feature matrix (size: num_samples * num_features).
+ * @param y Target vector (size: num_samples), values must be 0 or 1.
+ * @param num_samples Number of training samples.
+ * @param config Training configuration parameters.
+ *
+ * @return 0 on success, -1 on failure.
+ */
+int logreg_train(LogRegModel *model,
+                 const double *X,
+                 const double *y,
+                 size_t num_samples,
+                 LogRegConfig config);
 
 /**
- * Predicts probabilities based on the trained model
- * 
- * @param LogRegModel model which is trained
- * @param Double An elements whose image probability has to be predicted
-*/
-double logreg_predict_proba(const LogRegModel *model, const double *x);
+ * @brief Predicts probability for a single sample.
+ *
+ * @param model Trained model.
+ * @param x Feature vector (size: num_features).
+ * @return Predicted probability in range [0,1], or NAN if model not trained.
+ */
+double logreg_predict_proba(const LogRegModel *model,
+                            const double *x);
 
 /**
- * Predicts the class of the pre-image  based on trained model
- * 
- * @param LogRegModel model which is trained
- * @param Double An elements whose image probability has to be predicted
- * @param Double A threshold to determine to which class the image belongs to
-*/
-int logreg_predict(const LogRegModel *model, const double *x, double threshold);
+ * @brief Predicts class label (0 or 1) for a single sample.
+ *
+ * @param model Trained model.
+ * @param x Feature vector (size: num_features).
+ * @param threshold Classification threshold (commonly 0.5).
+ * @return 0 or 1 on success, -1 if model not trained.
+ */
+int logreg_predict(const LogRegModel *model,
+                   const double *x,
+                   double threshold);
 
 #ifdef __cplusplus
 }
