@@ -7,12 +7,14 @@
 extern "C" {
 #endif
 
+#ifndef ML_TYPES_DEFINED
+#define ML_TYPES_DEFINED
 /**
  * @brief Logistic Regression model structure.
  *
  * Stores learned weights, bias, and training state.
  */
-typedef struct
+typedef struct RegressionModel
 {
     size_t num_features;        /**< Number of input features */
     double *weights;            /**< Weight vector of size num_features */
@@ -24,12 +26,13 @@ typedef struct
 /**
  * @brief Configuration parameters for logistic regression training.
  */
-typedef struct
+typedef struct RegressionConfig
 {
     double learning_rate;           /**< Gradient descent step size */
     size_t num_iterations;          /**< Maximum number of iterations */
     double early_stopping_threshold;/**< Relative loss improvement threshold */
 } RegressionConfig;
+#endif
 
 /**
  * @brief Creates a logistic regression model.

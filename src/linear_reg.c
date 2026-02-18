@@ -4,21 +4,7 @@
 #include <float.h>
 #include <stdlib.h>
 #include <string.h>
-typedef struct
-{
-    size_t num_features;
-    double *weights;
-    double bias;
-    size_t stopping_iteration;
-    int trained;
-} RegressionModel;
-
-typedef struct
-{
-    double learning_rate;
-    size_t num_iterations;
-    double early_stopping_threshold;
-} RegressionConfig;
+#include "linear_reg.h"
 
 RegressionModel *linreg_create(size_t num_features)
 {

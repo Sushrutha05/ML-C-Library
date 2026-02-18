@@ -6,21 +6,7 @@
 
 static const double LOGREG_EPSILON = 1e-15;
 
-typedef struct
-{
-    size_t num_features;
-    double *weights;
-    double bias;
-    size_t stopping_iteration;
-    int trained;
-} RegressionModel;
-
-typedef struct
-{
-    double learning_rate;
-    size_t num_iterations;
-    double early_stopping_threshold;
-} RegressionConfig;
+#include "logistic_reg.h"
 
 RegressionModel *logreg_create(size_t num_features)
 {

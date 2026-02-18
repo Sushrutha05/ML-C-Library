@@ -6,6 +6,9 @@ extern "C" {
 #endif
 
 #include <stddef.h>
+#include "linear_reg.h"
+#include "logistic_reg.h"
+
 
 /* Forward declaration of RegressionConfig */
 typedef struct RegressionConfig RegressionConfig;

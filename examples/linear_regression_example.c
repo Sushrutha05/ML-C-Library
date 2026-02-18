@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "linear_reg.h"
+#include "mllib.h"
 
 int main() {
     // Data: y = 2x
@@ -24,7 +24,9 @@ int main() {
         return 1;
     }
 
+    fflush(stdout);
     printf("Training...\n");
+    fflush(stdout);
     if (linreg_train(model, X, y, num_samples, &config) != 0) {
         fprintf(stderr, "Training failed.\n");
         linreg_free(model);
@@ -32,13 +34,16 @@ int main() {
     }
 
     printf("Model Trained.\n");
+    fflush(stdout);
     printf("Bias: %f\n", model->bias);
     printf("Weight: %f\n", model->weights[0]);
+    fflush(stdout);
 
     // Prediction
     double test_val[] = { 6.0 };
     double prediction = linreg_predict(model, test_val);
     printf("Prediction for x=6.0: %f\n", prediction);
+    fflush(stdout);
 
     linreg_free(model);
     return 0;
