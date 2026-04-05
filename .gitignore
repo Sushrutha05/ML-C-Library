@@ -13,6 +13,10 @@
 *.exe
 *.out
 
+# Test files
+*.csv
+*.txt
+
 # Folders
 debug/
 build/
